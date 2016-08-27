@@ -72,6 +72,7 @@ class MovieBot
             return false;
         }
         $r_movies = [];
+        $pattern = '/\$(\d+\.?\d+)/';
         foreach ($movies as $movie) {
             $title = $movie->find('div[class=minfo] h2 a')[0];
             $href = $movie->find('h2 a')[0];
@@ -106,6 +107,7 @@ class MovieBot
             foreach ($types as $type) {
                 $movie_type[] = $type->innertext;
             }
+            $id = explode()
             $movie = [
         'title' => $title->plaintext,
         'url' => $href->href,
@@ -115,6 +117,7 @@ class MovieBot
         'script' => $movie_script,
         'actor' => $movie_actor,
         'image' => $image->src,
+        'id' => $id,
       ];
             $torrents = $this->loadTorrentInfo($href->href);
             $r_movies[] = $movie;
