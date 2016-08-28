@@ -6,6 +6,7 @@
 
 namespace hexpang\moviebotb3t;
 
+// require_once 'vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
 require_once __DIR__.'/../../../../../simple-html-dom/simple-html-dom/simple_html_dom.php';
 
 class MovieBot
@@ -14,6 +15,37 @@ class MovieBot
     public function __construct()
     {
         $this->baseUrl = 'http://www.bttiantang.com/movie.php?/order/update/{page}/';
+    }
+    public function downloadTorrent($url, $fileName)
+    {
+        $url = 'http://www.bttiantang.com'.$url;
+        $source = $this->loadUrl($url);
+        $html = str_get_html($source);
+        $input = $html->find('input[type=hidden]');
+        $data = [];
+        foreach ($input as $v) {
+            $data[$v->name] = $v->value;
+        }
+
+        $url = 'http://www.bttiantang.com/download1.php';
+        $post_data = $data;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_REFERER, $url);
+        // post数据
+        curl_setopt($ch, CURLOPT_POST, 1);
+        // post的变量
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        //打印获得的数据
+        $handle = fopen($fileName, 'w+');
+        fwrite($handle, $output);
+        fflush($handle);
+        fclose($handle);
+
+        return true;
     }
     public function loadUrl($url, $cache = false)
     {
@@ -107,7 +139,10 @@ class MovieBot
             foreach ($types as $type) {
                 $movie_type[] = $type->innertext;
             }
-            $id = explode()
+            $id = explode('/', $href->href);
+            $id = $id[count($id) - 1];
+            $id = explode('.', $id);
+            $id = $id[0];
             $movie = [
         'title' => $title->plaintext,
         'url' => $href->href,
