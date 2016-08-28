@@ -16,7 +16,7 @@ class MovieBot
     {
         $this->baseUrl = 'http://www.bttiantang.com/movie.php?/order/update/{page}/';
     }
-    public function downloadTorrent($url, $fileName)
+    public function downloadTorrent($url, $fileName = null)
     {
         $url = 'http://www.bttiantang.com'.$url;
         $source = $this->loadUrl($url);
@@ -40,6 +40,9 @@ class MovieBot
         $output = curl_exec($ch);
         curl_close($ch);
         //打印获得的数据
+        if ($fileName == null) {
+            return $output;
+        }
         $handle = fopen($fileName, 'w+');
         fwrite($handle, $output);
         fflush($handle);
