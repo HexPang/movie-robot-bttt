@@ -114,6 +114,8 @@ class MovieBot
         $pattern = '/\$(\d+\.?\d+)/';
         foreach ($movies as $movie) {
             $title = $movie->find('div[class=minfo] h2 a')[0];
+            $score = $movie->find('strong[class=sum]')[0];
+            $score = $score->innertext;
             $href = $movie->find('h2 a')[0];
             $types = $movie->find('ul li')[0];
             $types = $types->find('a');
@@ -160,6 +162,7 @@ class MovieBot
         'actor' => $movie_actor,
         'image' => $image->src,
         'id' => $id,
+        'score' => $score,
       ];
             // $torrents = $this->loadTorrentInfo($href->href);
             $r_movies[] = $movie;
