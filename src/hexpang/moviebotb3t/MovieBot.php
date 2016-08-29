@@ -60,7 +60,7 @@ class MovieBot
             $url = $cacheFile;
         }
         $response = null;
-        $response = @file_get_contents($url);
+        $response = file_get_contents($url);
         if ($cache) {
             $handle = fopen($cacheFile, 'w+');
             fwrite($handle, $response);
@@ -82,16 +82,25 @@ class MovieBot
     {
         $url = 'http://www.bttiantang.com'.$url;
         $src = $this->loadUrl($url);
+
         if ($src == null) {
             return;
         }
+
         $html = str_get_html($src);
         $torrents = $html->find('div[class=tinfo]');
         $result = [];
         foreach ($torrents as $torrent) {
+            $tree = [];
+            $tree_html = $torrent->find('span[class=video]');
+
+            foreach ($tree_html as $t) {
+                $tree[] = $t->innertext;
+            }
+
             $file = $torrent->find('p[class=torrent]')[0];
             $link = $torrent->find('a')[0];
-            $result[] = ['file_name' => $file->plaintext, 'url' => $link->href];
+            $result[] = ['file_name' => $file->plaintext, 'url' => $link->href, 'files' => $tree];
         }
 
         return $result;
