@@ -6,8 +6,11 @@
 
 namespace hexpang\moviebotb3t;
 
-// require_once 'vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
-require_once __DIR__.'/../../../../../simple-html-dom/simple-html-dom/simple_html_dom.php';
+if (file_exists('vendor/simple-html-dom/simple-html-dom/simple_html_dom.php')) {
+    require_once 'vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
+} else {
+    require_once __DIR__.'/../../../../../simple-html-dom/simple-html-dom/simple_html_dom.php';
+}
 
 class MovieBot
 {
@@ -98,6 +101,7 @@ class MovieBot
         $pQuery = new \simple_html_dom();
         $source = $this->loadWithPage($page);
         $html = str_get_html($source);
+
         $total_page = $html->find('ul[class=pagelist] span')[0];
         $pages = explode('/', $total_page->innertext);
         $total_page = mb_substr($pages[0], 1, mb_strlen($pages[0]) - 2);
@@ -157,7 +161,7 @@ class MovieBot
         'image' => $image->src,
         'id' => $id,
       ];
-            $torrents = $this->loadTorrentInfo($href->href);
+            // $torrents = $this->loadTorrentInfo($href->href);
             $r_movies[] = $movie;
         }
 
