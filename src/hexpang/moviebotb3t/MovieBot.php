@@ -60,7 +60,7 @@ class MovieBot
             $url = $cacheFile;
         }
         $response = null;
-        $response = @file_get_contents($url);
+        $response = file_get_contents($url);
         if ($cache) {
             $handle = fopen($cacheFile, 'w+');
             fwrite($handle, $response);
@@ -82,19 +82,73 @@ class MovieBot
     {
         $url = 'http://www.bttiantang.com'.$url;
         $src = $this->loadUrl($url);
+
         if ($src == null) {
             return;
         }
+
         $html = str_get_html($src);
         $torrents = $html->find('div[class=tinfo]');
         $result = [];
         foreach ($torrents as $torrent) {
+            $tree = [];
+            $tree_html = $torrent->find('span[class=video]');
+
+            foreach ($tree_html as $t) {
+                $tree[] = $t->innertext;
+            }
+
             $file = $torrent->find('p[class=torrent]')[0];
             $link = $torrent->find('a')[0];
-            $result[] = ['file_name' => $file->plaintext, 'url' => $link->href];
+            $result[] = ['file_name' => $file->plaintext, 'url' => $link->href, 'files' => $tree];
         }
 
         return $result;
+    }
+    public function loadMovieInfo($id)
+    {
+        $url = "http://www.bttiantang.com/subject/{$id}.html";
+        $src = $this->loadUrl($url);
+        if ($src == null) {
+            return;
+        }
+        $html = str_get_html($src);
+
+        $title_html = $html->find('div[class=title] h2')[0];
+        $title = $title_html->plaintext;
+        //.'/'.$title_html->find('span')[0]->innertext;
+        if ($title_html->find('span')) {
+            $title .= '/'.$title_html->find('span')[0]->innertext;
+        }
+        $info_block = $html->find('ul[class=moviedteail_list]')[0];
+
+        $field = ['type', 'country', 'year', 'director', 'script', 'actor'];
+        $info_html = $info_block->find('li');
+
+        $info = [];
+        foreach ($field as $i => $f) {
+            $hh = $info_html[$i]->find('a');
+            $a = [];
+            foreach ($hh as $h) {
+                $a[] = $h->innertext;
+            }
+            $info[$f] = $a;
+        }
+        $image_html = $html->find('div[class=moviedteail_img]')[0];
+        $image = $image_html->find('img')[0]->src;
+        $score_html = $html->find('p[class=rt]')[0];
+        $score = $score_html->find('strong')[0]->innertext;
+        if (count($score_html->find('em[class=dian]')) > 0) {
+            $f = $score_html->find('em[class=fm]')[0];
+            $score .= '.'.$f->innertext;
+        }
+        $info['title'] = $title;
+        $info['url'] = "/subject/{$id}.html";
+        $info['id'] = $id;
+        $info['image'] = $image;
+        $info['score'] = $score;
+
+        return $info;
     }
     public function loadMovies($page)
     {
