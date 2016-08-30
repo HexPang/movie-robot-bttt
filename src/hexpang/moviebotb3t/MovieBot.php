@@ -75,7 +75,7 @@ class MovieBot
     public function loadWithPage($page = 1, $type = '0')
     {
         $URL = str_ireplace('{page}', $page, $this->baseUrl);
-        $URL = str_ireplace('{type}', $type, $this->baseUrl);
+        $URL = str_ireplace('{type}', $type, $URL);
         $response = $this->loadUrl($URL);
 
         return $response;
