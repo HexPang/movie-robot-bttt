@@ -17,7 +17,8 @@ class MovieBot
     public $baseUrl;
     public function __construct()
     {
-        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/order/update/{page}/';
+        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/{type},update/{page}/';
+        // $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/update/{page}/';
     }
     public function downloadTorrent($url, $fileName = null)
     {
@@ -71,9 +72,10 @@ class MovieBot
         return $response;
     }
 
-    public function loadWithPage($page = 1)
+    public function loadWithPage($page = 1, $type = '0')
     {
         $URL = str_ireplace('{page}', $page, $this->baseUrl);
+        $URL = str_ireplace('{type}', $type, $this->baseUrl);
         $response = $this->loadUrl($URL);
 
         return $response;
@@ -150,10 +152,10 @@ class MovieBot
 
         return $info;
     }
-    public function loadMovies($page)
+    public function loadMovies($page, $type = '0')
     {
         $pQuery = new \simple_html_dom();
-        $source = $this->loadWithPage($page);
+        $source = $this->loadWithPage($page, $type);
         $html = str_get_html($source);
 
         $total_page = $html->find('ul[class=pagelist] span')[0];
