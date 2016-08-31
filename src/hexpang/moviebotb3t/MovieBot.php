@@ -17,7 +17,7 @@ class MovieBot
     public $baseUrl;
     public function __construct()
     {
-        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/{type},update/{page}/';
+        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/{order},order/{type},update/{page}/';
         // $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/update/{page}/';
     }
     public function downloadTorrent($url, $fileName = null)
@@ -74,8 +74,23 @@ class MovieBot
 
     public function loadWithPage($page = 1, $type = '0')
     {
+        $order = 'type';
+        if (is_array($type)) {
+            $t = '';
+            $order = '';
+            foreach ($type as $k => $v) {
+                $t .= $k.',';
+                $order .= $v.',';
+            }
+            $order = substr($order, 0, strlen($order) - 1);
+            $t = substr($t, 0, strlen($t) - 1);
+            $type = $t;
+        }
+
         $URL = str_ireplace('{page}', $page, $this->baseUrl);
         $URL = str_ireplace('{type}', $type, $URL);
+        $URL = str_ireplace('{order}', $order, $URL);
+
         $response = $this->loadUrl($URL);
 
         return $response;
