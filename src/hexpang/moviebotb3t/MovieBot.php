@@ -61,14 +61,17 @@ class MovieBot
             $url = $cacheFile;
         }
         $response = null;
-        $response = file_get_contents($url);
-        if ($cache) {
-            $handle = fopen($cacheFile, 'w+');
-            fwrite($handle, $response);
-            fflush($handle);
-            fclose($handle);
-        }
+        try {
+          $response = file_get_contents($url);
+          if ($cache) {
+              $handle = fopen($cacheFile, 'w+');
+              fwrite($handle, $response);
+              fflush($handle);
+              fclose($handle);
+          }
+        } catch (Exception $e) {
 
+        }
         return $response;
     }
 
