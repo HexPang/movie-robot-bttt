@@ -6,13 +6,15 @@
 
 namespace hexpang\moviebotb3t;
 
+use hexpang\moviebot\IBot;
+
 if (file_exists('vendor/simple-html-dom/simple-html-dom/simple_html_dom.php')) {
     require_once 'vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
 } else {
     require_once __DIR__.'/../../../../../simple-html-dom/simple-html-dom/simple_html_dom.php';
 }
 
-class MovieBot
+class MovieBot implements IBot
 {
     public $baseUrl;
     public function __construct()
