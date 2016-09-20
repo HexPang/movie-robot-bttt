@@ -17,7 +17,7 @@ class MovieBot
     public $baseUrl;
     public function __construct()
     {
-        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/{order},order/{type},update/{page}/';
+        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/{type},update/{page}/';
         // $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/update/{page}/';
     }
     public function downloadTorrent($url, $fileName = null)
@@ -60,39 +60,21 @@ class MovieBot
         if (file_exists($cacheFile) && $cache) {
             $url = $cacheFile;
         }
-        $response = null;
-        try {
-          $response = file_get_contents($url);
-          if ($cache) {
-              $handle = fopen($cacheFile, 'w+');
-              fwrite($handle, $response);
-              fflush($handle);
-              fclose($handle);
-          }
-        } catch (Exception $e) {
-
+        $response = @file_get_contents($url);
+        if ($cache) {
+            $handle = fopen($cacheFile, 'w+');
+            fwrite($handle, $response);
+            fflush($handle);
+            fclose($handle);
         }
+
         return $response;
     }
 
-    public function loadWithPage($page = 1, $type = '0')
+    public function loadWithPage($page = 1, $type = 0)
     {
-        $order = 'type';
-        if (is_array($type)) {
-            $t = '';
-            $order = '';
-            foreach ($type as $k => $v) {
-                $t .= $k.',';
-                $order .= $v.',';
-            }
-            $order = substr($order, 0, strlen($order) - 1);
-            $t = substr($t, 0, strlen($t) - 1);
-            $type = $t;
-        }
-
         $URL = str_ireplace('{page}', $page, $this->baseUrl);
         $URL = str_ireplace('{type}', $type, $URL);
-        $URL = str_ireplace('{order}', $order, $URL);
 
         $response = $this->loadUrl($URL);
 
@@ -170,76 +152,81 @@ class MovieBot
 
         return $info;
     }
-    public function loadMovies($page, $type = '0')
+    public function loadMovies($page, $type = 0)
     {
         $pQuery = new \simple_html_dom();
         $source = $this->loadWithPage($page, $type);
-        $html = str_get_html($source);
-
-        $total_page = $html->find('ul[class=pagelist] span')[0];
-        $pages = explode('/', $total_page->innertext);
-        $total_page = mb_substr($pages[0], 1, mb_strlen($pages[0]) - 2);
-        $total_result = mb_substr($pages[1], 0, mb_strlen($pages[1]) - 1);
-        $movies = $html->find('div[class=perone]');
-        if (!$movies || count($movies) == 0) {
-            return false;
-        }
         $r_movies = [];
-        $pattern = '/\$(\d+\.?\d+)/';
-        foreach ($movies as $movie) {
-            $title = $movie->find('div[class=minfo] h2 a')[0];
-            $score = $movie->find('strong[class=sum]')[0];
-            $score = $score->innertext;
-            $href = $movie->find('h2 a')[0];
-            $types = $movie->find('ul li')[0];
-            $types = $types->find('a');
-            $countries = $movie->find('ul li')[1];
-            $countries = $countries->find('a');
-            $director = $movie->find('ul li')[2];
-            $director = $director->find('a');
-            $script = $movie->find('ul li')[3];
-            $script = $script->find('a');
-            $stars = $movie->find('ul li')[4];
-            $stars = $stars->find('a');
-            $movie_script = [];
-            $movie_director = [];
-            $movie_type = [];
-            $movie_countries = [];
-            $movie_actor = [];
-            $image = $movie->find('div[class=litpic] a img')[0];
-            foreach ($stars as $s) {
-                $movie_actor[] = $s->innertext;
+        $total_result = 0;
+        $total_page = 0;
+        if ($source != null) {
+            $html = str_get_html($source);
+
+            $total_page = $html->find('ul[class=pagelist] span')[0];
+            $pages = explode('/', $total_page->innertext);
+            $total_page = mb_substr($pages[0], 1, mb_strlen($pages[0]) - 2);
+            $total_result = mb_substr($pages[1], 0, mb_strlen($pages[1]) - 1);
+            $movies = $html->find('div[class=perone]');
+            if (!$movies || count($movies) == 0) {
+                return false;
             }
-            foreach ($director as $actor) {
-                $movie_director[] = $actor->innertext;
+            $r_movies = [];
+            $pattern = '/\$(\d+\.?\d+)/';
+            foreach ($movies as $movie) {
+                $title = $movie->find('div[class=minfo] h2 a')[0];
+                $score = $movie->find('strong[class=sum]')[0];
+                $score = $score->innertext;
+                $href = $movie->find('h2 a')[0];
+                $types = $movie->find('ul li')[0];
+                $types = $types->find('a');
+                $countries = $movie->find('ul li')[1];
+                $countries = $countries->find('a');
+                $director = $movie->find('ul li')[2];
+                $director = $director->find('a');
+                $script = $movie->find('ul li')[3];
+                $script = $script->find('a');
+                $stars = $movie->find('ul li')[4];
+                $stars = $stars->find('a');
+                $movie_script = [];
+                $movie_director = [];
+                $movie_type = [];
+                $movie_countries = [];
+                $movie_actor = [];
+                $image = $movie->find('div[class=litpic] a img')[0];
+                foreach ($stars as $s) {
+                    $movie_actor[] = $s->innertext;
+                }
+                foreach ($director as $actor) {
+                    $movie_director[] = $actor->innertext;
+                }
+                foreach ($script as $s) {
+                    $movie_script[] = $s->innertext;
+                }
+                foreach ($countries as $country) {
+                    $movie_countries[] = $country->innertext;
+                }
+                foreach ($types as $type) {
+                    $movie_type[] = $type->innertext;
+                }
+                $id = explode('/', $href->href);
+                $id = $id[count($id) - 1];
+                $id = explode('.', $id);
+                $id = $id[0];
+                $movie = [
+          'title' => $title->plaintext,
+          'url' => $href->href,
+          'type' => $movie_type,
+          'country' => $movie_countries,
+          'director' => $movie_director,
+          'script' => $movie_script,
+          'actor' => $movie_actor,
+          'image' => $image->src,
+          'id' => $id,
+          'score' => $score,
+        ];
+              // $torrents = $this->loadTorrentInfo($href->href);
+              $r_movies[] = $movie;
             }
-            foreach ($script as $s) {
-                $movie_script[] = $s->innertext;
-            }
-            foreach ($countries as $country) {
-                $movie_countries[] = $country->innertext;
-            }
-            foreach ($types as $type) {
-                $movie_type[] = $type->innertext;
-            }
-            $id = explode('/', $href->href);
-            $id = $id[count($id) - 1];
-            $id = explode('.', $id);
-            $id = $id[0];
-            $movie = [
-        'title' => $title->plaintext,
-        'url' => $href->href,
-        'type' => $movie_type,
-        'country' => $movie_countries,
-        'director' => $movie_director,
-        'script' => $movie_script,
-        'actor' => $movie_actor,
-        'image' => $image->src,
-        'id' => $id,
-        'score' => $score,
-      ];
-            // $torrents = $this->loadTorrentInfo($href->href);
-            $r_movies[] = $movie;
         }
 
         return ['movies' => $r_movies, 'total_result' => $total_result, 'total_page' => $total_page];
