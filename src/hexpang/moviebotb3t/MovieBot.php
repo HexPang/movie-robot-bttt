@@ -24,7 +24,7 @@ class MovieBot implements IBot
     }
     public function downloadTorrent($url, $fileName = null)
     {
-        $url = 'http://www.bttiantang.com'.$url;
+        $url = 'https://www.bttt.la'.$url;
         $source = $this->loadUrl($url);
         $html = str_get_html($source);
         $input = $html->find('input[type=hidden]');
