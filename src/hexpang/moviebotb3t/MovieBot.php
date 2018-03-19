@@ -56,13 +56,23 @@ class MovieBot implements IBot
 
         return true;
     }
+    public function loadWithCurl($url){
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false); 
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
     public function loadUrl($url, $cache = false)
     {
         $cacheFile = 'cache/'.urlencode($url).'.cache';
         if (file_exists($cacheFile) && $cache) {
             $url = $cacheFile;
         }
-        $response = @file_get_contents($url);
+        $response = $this->loadWithCurl($url);
         if ($cache) {
             $handle = fopen($cacheFile, 'w+');
             fwrite($handle, $response);
@@ -77,14 +87,13 @@ class MovieBot implements IBot
     {
         $URL = str_ireplace('{page}', $page, $this->baseUrl);
         $URL = str_ireplace('{type}', $type, $URL);
-
         $response = $this->loadUrl($URL);
 
         return $response;
     }
     public function loadTorrentInfo($url)
     {
-        $url = 'http://www.bttiantang.com'.$url;
+        $url = 'https://www.bttt.la'.$url;
         $src = $this->loadUrl($url);
 
         if ($src == null) {
