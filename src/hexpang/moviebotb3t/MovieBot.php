@@ -19,7 +19,7 @@ class MovieBot implements IBot
     public $baseUrl;
     public function __construct()
     {
-        $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/{type},update/{page}/';
+        $this->baseUrl = 'https://www.bttt.la/movie.php?/type,order/{type},update/{page}/';
         // $this->baseUrl = 'http://www.bttiantang.com/movie.php?/type,order/update/{page}/';
     }
     public function downloadTorrent($url, $fileName = null)
@@ -33,7 +33,7 @@ class MovieBot implements IBot
             $data[$v->name] = $v->value;
         }
 
-        $url = 'http://www.bttiantang.com/download1.php';
+        $url = 'https://www.bttt.la/download1.php';
         $post_data = $data;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -111,7 +111,7 @@ class MovieBot implements IBot
     }
     public function loadMovieInfo($id)
     {
-        $url = "http://www.bttiantang.com/subject/{$id}.html";
+        $url = "https://www.bttt.la/subject/{$id}.html";
         $src = $this->loadUrl($url);
         if ($src == null) {
             return;
